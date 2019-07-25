@@ -12,15 +12,14 @@ public class PlayerController : MonoBehaviour
     public float characterSpeedMultiplier = 100;
     public bool acceptInput = true;
 
-    CharacterController2D activeController;
-    Character activeCharacter;
+    public CharacterController2D activeController;
 
     void Update()
     {
         if (acceptInput)
         {
-            horiz = Input.GetAxisRaw("Horizontal") * activeCharacter.speed * characterSpeedMultiplier; // Multiply by the active characters speed
-            vert = Input.GetAxisRaw("Vertical") * activeCharacter.speed * characterSpeedMultiplier;
+            horiz = Input.GetAxisRaw("Horizontal") * characterSpeedMultiplier; // Multiply by the active characters speed
+            vert = Input.GetAxisRaw("Vertical") * characterSpeedMultiplier;
 
             if (Input.GetButtonDown("Jump"))
             {
@@ -52,11 +51,4 @@ public class PlayerController : MonoBehaviour
         activeController.Move(horiz * Time.fixedDeltaTime, vert * Time.fixedDeltaTime, Crouch, Jump);
         Jump = false;
     }
-
-    public void SetCharacter(CharacterController2D _activeCharacterController, Character _activeCharacter) {
-        activeController = _activeCharacterController;
-        activeCharacter = _activeCharacter;
-        SetAcceptInput(true);
-    }
-
 }
