@@ -4,5 +4,5 @@ using UnityEngine;
 
 public class MapController : MonoBehaviour
 {
-    public List<BoardController> Boards;
+    //handles the creation of the world
 }
