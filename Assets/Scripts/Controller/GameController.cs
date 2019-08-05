@@ -20,9 +20,6 @@ public class GameController : MonoBehaviour
     public int seed = 42;
 
 
-    bool bottom;
-    bool bottom2;
-
     private void Start()
     {
         GenerateMap();
@@ -274,47 +271,54 @@ public class GameController : MonoBehaviour
         Random.InitState(seed);
         j = maxY - 1;
         i = Random.Range(0, maxX);
+
+        bool bottom;
+        bool bottom2;
         bottom = bottom2 = false;
+
         Add(i, j, 1);
 
         while (!bottom2)
         {
-            chooseRoom();
+            chooseRoom(ref bottom, ref bottom2);
         }
     }
-    void chooseRoom() {
+    void chooseRoom(ref bool a, ref bool b) {
         float r = Random.Range(0.0f, 1.0f);
         if (r > 0.67f)
         {
-            checkDown();
+            bool c, d;
+            c = a;
+            d = b;
+            checkDown(ref a, out b);
         }
         else
         {
             //Move Left or Right
             if (i == 0) //Left Wall, no left possible
             {
-                if (!checkRight()){ checkDown(); }
+                if (!checkRight()){ checkDown(ref a, out b); }
             }
             else if (i == maxX - 1) //Right Wall, no right possible
             {
-                if (!checkLeft()) { checkDown(); }
+                if (!checkLeft()) { checkDown(ref a, out b); }
             }
             else
             {
                 //In between walls so both left and right are valid options
                 if (r > 0.34f) //Try left
                 {
-                    if (!checkLeft()) { if (!checkRight()) { checkDown(); } }
+                    if (!checkLeft()) { if (!checkRight()) { checkDown(ref a, out b); } }
                 }
                 else
                 {
-                    if (!checkRight()) { if (!checkLeft()) { checkDown(); } }
+                    if (!checkRight()) { if (!checkLeft()) { checkDown(ref a, out b); } }
                 }
             }
         }
     }
 
-    bool checkDown() {
+    bool checkDown(ref bool a, out bool b) {
         //Move Down
         //Add Room below
         j--;
@@ -323,24 +327,28 @@ public class GameController : MonoBehaviour
         if (j > 0)
         { //Not near bottom
             Add(i, j, 0);
+            b = false;
             return true;
         }
         else if (j <= 0)
         {
-            if (bottom)
+            if (a)
             { //Already on bottom, exit condition
               //Make Room Exit
                 Add(i, j, 4);
-                bottom2 = true;
+                b = true;
                 return true;
             }
             else
             { //Just hit bottom
-                bottom = true;
+                a = true;
+                b = false;
                 Add(i, j, 0);
                 return true;
             }
         }
+        a = false;
+        b = false;
         return false;
     }
 
