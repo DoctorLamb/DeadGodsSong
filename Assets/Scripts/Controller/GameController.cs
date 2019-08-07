@@ -60,7 +60,11 @@ public class GameController : MonoBehaviour
 
         while (!bottom2)
         {
-            chooseRoom(ref bottom, ref bottom2);
+            Vector2Int pos = chooseRoom(ref bottom, ref bottom2);
+            i = pos.x;
+            j = pos.y;
+            if (bottom2) currentChunk.AddTile(i, 0, 4);
+            else { currentChunk.AddTile(i, j, 0); }
         }
     }
 
@@ -68,36 +72,107 @@ public class GameController : MonoBehaviour
 
     }
 
-    void chooseRoom(ref bool a, ref bool b) {
+    Vector2Int chooseRoom(ref bool a, ref bool b) {
         float r = Random.Range(0.0f, 1.0f);
         if (r > 0.67f)
         {
             bool c, d;
             c = a;
             d = b;
-            checkDown(ref a, out b);
+            if (checkDown(ref a, out b))
+            {
+                return new Vector2Int(i, j - 1);
+            }
+            else {
+                return new Vector2Int(i, j);
+            }
         }
         else
         {
             //Move Left or Right
             if (i == 0) //Left Wall, no left possible
             {
-                if (!checkRight()){ checkDown(ref a, out b); }
+                if (!checkRight())
+                {
+                    if (checkDown(ref a, out b)) {
+                        return new Vector2Int(i, j - 1);
+                    }
+                    else
+                    {
+                        return new Vector2Int(i, j);
+                    }
+                }
+                else {
+                    return new Vector2Int(i + 1, j);
+                }
             }
             else if (i == currentChunk.X - 1) //Right Wall, no right possible
             {
-                if (!checkLeft()) { checkDown(ref a, out b); }
+                if (!checkLeft())
+                {
+                    if (checkDown(ref a, out b))
+                    {
+                        return new Vector2Int(i, j - 1);
+                    }
+                    else
+                    {
+                        return new Vector2Int(i, j);
+                    }
+                }
+                else {
+                    return new Vector2Int(i - 1, j);
+                }
             }
             else
             {
                 //In between walls so both left and right are valid options
                 if (r > 0.34f) //Try left
                 {
-                    if (!checkLeft()) { if (!checkRight()) { checkDown(ref a, out b); } }
+                    if (!checkLeft())
+                    {
+                        if (!checkRight())
+                        {
+                            if (checkDown(ref a, out b))
+                            {
+                                return new Vector2Int(i, j - 1);
+                            }
+                            else
+                            {
+                                return new Vector2Int(i, j);
+                            }
+                        }
+                        else
+                        {
+                            return new Vector2Int(i + 1, j);
+                        }
+                    }
+                    else {
+                        return new Vector2Int(i - 1, j);
+                    }
                 }
                 else
                 {
-                    if (!checkRight()) { if (!checkLeft()) { checkDown(ref a, out b); } }
+                    if (!checkRight())
+                    {
+                        if (!checkLeft())
+                        {
+                            if (checkDown(ref a, out b))
+                            {
+                                return new Vector2Int(i, j - 1);
+                            }
+                            else
+                            {
+                                return new Vector2Int(i, j);
+                            }
+                        }
+                        else
+                        {
+                            return new Vector2Int(i - 1, j);
+                        }
+                    }
+                    else {
+                        return new Vector2Int(i + 1, j);
+                    }
                 }
             }
         }
@@ -106,21 +181,20 @@ public class GameController : MonoBehaviour
     bool checkDown(ref bool a, out bool b) {
         //Move Down
         //Add Room below
-        j--;
-        if (j < 0) j = 0;
+        int y = j - 1;
+        if (y < 0) y = 0;
 
-        if (j > 0)
+        if (y > 0)
         { //Not near bottom
-            currentChunk.AddTile(i, j, 0);
+            
             b = false;
             return true;
         }
-        else if (j <= 0)
+        else if (y <= 0)
         {
             if (a)
             { //Already on bottom, exit condition
               //Make Room Exit
-                currentChunk.AddTile(i, j, 4);
                 b = true;
                 return true;
             }
@@ -128,7 +202,7 @@ public class GameController : MonoBehaviour
             { //Just hit bottom
                 a = true;
                 b = false;
-                currentChunk.AddTile(i, j, 0);
+
                 return true;
             }
         }
@@ -140,8 +214,6 @@ public class GameController : MonoBehaviour
     bool checkLeft() {
         if (currentChunk.tiles[Index(i - 1, j)] == null)
         {
-            i--;
-            currentChunk.AddTile(i, j, 0);
             return true;
         }
         return false;
@@ -150,8 +222,6 @@ public class GameController : MonoBehaviour
     bool checkRight() {
         if (currentChunk.tiles[Index(i + 1, j)] == null)
         {
-            i++;
-            currentChunk.AddTile(i, j, 0);
             return true;
         }
         return false;
@@ -175,7 +245,6 @@ public class GameController : MonoBehaviour
     }
 
     private void VisualizeMap() {
-        Debug.Log("In Visualize");
         foreach (Chunk c in Chunks)
         {
             foreach (Tile t in c.tiles)
