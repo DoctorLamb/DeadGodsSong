@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
+[Serializable]
 public class Chunk
 {
     //Chunks make up the entirety of the map
@@ -21,7 +22,7 @@ public class Chunk
         tiles = new Tile[X * Y];
     }
 
-    public void Add(int _i, int _j, int _type)
+    public void AddTile(int _i, int _j, int _type)
     {
         tiles[Index(_i, _j)] = new Tile(_i, _j, _type);
     }
