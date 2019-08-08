@@ -8,7 +8,7 @@ public class Tile
 {
     public int X;
     public int Y;
-
+    public bool[] connections;
     public Vector2Int Position {
         get {
             return new Vector2Int(X, Y);
@@ -26,12 +26,30 @@ public class Tile
         X = _X;
         Y = _Y;
         type = (TileType)_type;
+        connections = new bool[4];
     }
     public Tile(int _X, int _Y, TileType _type)
     {
         X = _X;
         Y = _Y;
         type = _type;
+        connections = new bool[4];
+    }
+    public Tile(int _X, int _Y, int _type, int connection)
+    {
+        X = _X;
+        Y = _Y;
+        type = (TileType)_type;
+        connections = new bool[4];
+        connections[connection] = true;
+    }
+    public Tile(int _X, int _Y, TileType _type, int connection)
+    {
+        X = _X;
+        Y = _Y;
+        type = _type;
+        connections = new bool[4];
+        connections[connection] = true;
     }
 }
 public enum TileType {

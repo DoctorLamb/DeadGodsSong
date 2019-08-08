@@ -27,6 +27,11 @@ public class Chunk
         tiles[Index(_i, _j)] = new Tile(_i, _j, _type);
     }
 
+    public void AddTile(int _i, int _j, int _type, int _connection)
+    {
+        tiles[Index(_i, _j)] = new Tile(_i, _j, _type, _connection);
+    }
+
     int Index(int _i, int _j)
     {
         return _i + (X * _j);

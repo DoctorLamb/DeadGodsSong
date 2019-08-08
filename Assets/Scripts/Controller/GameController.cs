@@ -35,44 +35,28 @@ public class GameController : MonoBehaviour
         u = v = 0; 
         AddChunk();
 
-        j = currentChunk.Y - 1;
-        i = Random.Range(0, currentChunk.X);
-        int n = 0;
-        while (n < criticalPathLength)
-        {
-            GenerateChunk();
-            //Generate Pathway
-                //Choose room from current chunk's exit point. (Left)
-                //Choose another room (Right)
-                //Choose the I and J for a room below the (Right)
-                //Generate a new chunk with that I and J as its start. <<< Take care whjen setting the chunks U and V tis will effect visualization.
-                // ---- Repeat till Chunks = critical path length.
-            n++;
-        }
+        GenerateChunk();
     }
 
     void GenerateChunk() {
         bool bottom;
         bool bottom2;
         bottom = bottom2 = false;
-
+        j = currentChunk.Y - 1;
+        i = Random.Range(0, currentChunk.X);
         currentChunk.AddTile(i, j, 1);
 
         while (!bottom2)
         {
-            Vector2Int pos = chooseRoom(ref bottom, ref bottom2);
+            Vector3Int pos = chooseRoom(ref bottom, ref bottom2);
             i = pos.x;
             j = pos.y;
-            if (bottom2) currentChunk.AddTile(i, 0, 4);
-            else { currentChunk.AddTile(i, j, 0); }
+            if (bottom2) currentChunk.AddTile(i, 0, 4, pos.z);
+            else { currentChunk.AddTile(i, j, 0, pos.z); }
         }
     }
 
-    void GeneratePathway() {
-
-    }
-
-    Vector2Int chooseRoom(ref bool a, ref bool b) {
+    Vector3Int chooseRoom(ref bool a, ref bool b) { //x and y are the coordinates of the new room, and z is the index of its connection.
         float r = Random.Range(0.0f, 1.0f);
         if (r > 0.67f)
         {
@@ -81,10 +65,12 @@ public class GameController : MonoBehaviour
             d = b;
             if (checkDown(ref a, out b))
             {
-                return new Vector2Int(i, j - 1);
+                return new Vector3Int(i, j - 1,0);
             }
             else {
-                return new Vector2Int(i, j);
+                //blank spot, should never occur
+                //if this area is reached throw error and restart the map generation
+                return new Vector3Int(i, j, 0);
             }
         }
         else
@@ -95,15 +81,16 @@ public class GameController : MonoBehaviour
                 if (!checkRight())
                 {
                     if (checkDown(ref a, out b)) {
-                        return new Vector2Int(i, j - 1);
+                        return new Vector3Int(i, j - 1,0);
                     }
                     else
-                    {
-                        return new Vector2Int(i, j);
+                    {   //blank spot, should never occur
+                        //if this area is reached throw error and restart the map generation
+                        return new Vector3Int(i, j,0);
                     }
                 }
                 else {
-                    return new Vector2Int(i + 1, j);
+                    return new Vector3Int(i + 1, j,3);
                 }
             }
             else if (i == currentChunk.X - 1) //Right Wall, no right possible
@@ -112,15 +99,16 @@ public class GameController : MonoBehaviour
                 {
                     if (checkDown(ref a, out b))
                     {
-                        return new Vector2Int(i, j - 1);
+                        return new Vector3Int(i, j - 1, 0);
                     }
                     else
-                    {
-                        return new Vector2Int(i, j);
+                    {   //blank spot, should never occur
+                        //if this area is reached throw error and restart the map generation
+                        return new Vector3Int(i, j, 0);
                     }
                 }
                 else {
-                    return new Vector2Int(i - 1, j);
+                    return new Vector3Int(i - 1, j,1);
                 }
             }
             else
@@ -134,20 +122,21 @@ public class GameController : MonoBehaviour
                         {
                             if (checkDown(ref a, out b))
                             {
-                                return new Vector2Int(i, j - 1);
+                                return new Vector3Int(i, j - 1, 0);
                             }
                             else
-                            {
-                                return new Vector2Int(i, j);
+                            {   //blank spot, should never occur
+                                //if this area is reached throw error and restart the map generation
+                                return new Vector3Int(i, j, 0);
                             }
                         }
                         else
                         {
-                            return new Vector2Int(i + 1, j);
+                            return new Vector3Int(i + 1, j,3);
                         }
                     }
                     else {
-                        return new Vector2Int(i - 1, j);
+                        return new Vector3Int(i - 1, j,1);
                     }
                 }
                 else
@@ -158,20 +147,21 @@ public class GameController : MonoBehaviour
                         {
                             if (checkDown(ref a, out b))
                             {
-                                return new Vector2Int(i, j - 1);
+                                return new Vector3Int(i, j - 1, 0);
                             }
                             else
-                            {
-                                return new Vector2Int(i, j);
+                            {   //blank spot, should never occur
+                                //if this area is reached throw error and restart the map generation
+                                return new Vector3Int(i, j, 0);
                             }
                         }
                         else
                         {
-                            return new Vector2Int(i - 1, j);
+                            return new Vector3Int(i - 1, j,1);
                         }
                     }
                     else {
-                        return new Vector2Int(i + 1, j);
+                        return new Vector3Int(i + 1, j,3);
                     }
                 }
             }
@@ -230,16 +220,6 @@ public class GameController : MonoBehaviour
     void AddChunk()
     {
         Chunk temp = new Chunk(u, v, Random.Range(3, 12), Random.Range(3, 12));
-        currentChunk = temp;
-        Chunks.Add(temp);
-    }
-
-    void AddPathway() {
-        //Need to properly set U and V which cant be done until the next room is chosen
-        u = i;
-        v = j;
-        i = j = 0;
-        Chunk temp = new Chunk(u, v, Random.Range(2, 4), Random.Range(2, 4));
         currentChunk = temp;
         Chunks.Add(temp);
     }
