@@ -15,10 +15,11 @@ public class GameController : MonoBehaviour
     Color Left = Color.blue;
     Color color = Color.yellow;
 
+    public int maxchunkX, maxchunkY;
+
     int i, j; // Current Tile - reset with each tile
     int u, v;
     public int seed = 42;
-    public int criticalPathLength = 1;
 
 
     private void Start()
@@ -49,10 +50,87 @@ public class GameController : MonoBehaviour
         while (!bottom2)
         {
             Vector3Int pos = chooseRoom(ref bottom, ref bottom2);
-            i = pos.x;
-            j = pos.y;
-            if (bottom2) currentChunk.AddTile(i, 0, 4, pos.z);
-            else { currentChunk.AddTile(i, j, 0, pos.z); }
+            //create a backwards connection reference to the current tile before changing i and j
+            if (bottom2) {
+                i = pos.x;
+                j = pos.y;
+                currentChunk.tiles[Index(i, 0)].type = (TileType)4;
+            }
+            else {
+                switch (pos.z)
+                {
+                    case 0:
+                        currentChunk.tiles[Index(i, j)].connections[2] = true;
+                        break;
+                    case 1:
+                        currentChunk.tiles[Index(i, j)].connections[3] = true;
+                        break;
+                    case 3:
+                        currentChunk.tiles[Index(i, j)].connections[1] = true;
+                        break;
+                }
+                i = pos.x;
+                j = pos.y;
+
+                currentChunk.AddTile(i, j, 0, pos.z);
+            }
+        }
+        //Massage the chunk to fill the null spaces with tiles
+        Queue<Tile> filler = new Queue<Tile>();
+        for (int a = 0; a < currentChunk.X; a++) {
+            for (int b = 0; b < currentChunk.Y; b++) {
+                if (currentChunk.tiles[Index(a, b)] == null) {
+                    filler.Enqueue(currentChunk.NewTile(a, b, 0));
+                }
+            }
+        }
+        while (filler.Count > 0) {
+            Tile t = filler.Dequeue();
+            //In the future make this work randomly to create more variety
+            float r = Random.Range(0.0f, 1.0f);
+            if (r > 0.75f)
+            {
+                if (t.Y < currentChunk.Y - 1 && currentChunk.tiles[Index(t.X, t.Y + 1)] != null && currentChunk.tiles[Index(t.X, t.Y + 1)].connected) //Top Neighbor
+                {
+                    t.connections[0] = currentChunk.tiles[Index(t.X, t.Y + 1)].connections[2] = true;
+                }
+                else
+                {
+                    filler.Enqueue(t);
+                }
+            }
+            else if (r > 0.5f)
+            {
+                if (t.X < currentChunk.X - 1 && currentChunk.tiles[Index(t.X + 1, t.Y)] != null && currentChunk.tiles[Index(t.X + 1, t.Y)].connected) //Right Neighbor
+                {
+                    t.connections[1] = currentChunk.tiles[Index(t.X + 1, t.Y)].connections[3] = true;
+                }
+                else
+                {
+                    filler.Enqueue(t);
+                }
+            }
+            else if (r > 0.25f)
+            {
+                if (t.Y > 0 && currentChunk.tiles[Index(t.X, t.Y - 1)] != null && currentChunk.tiles[Index(t.X, t.Y - 1)].connected) //Bottom Neighbor
+                {
+                    t.connections[2] = currentChunk.tiles[Index(t.X, t.Y - 1)].connections[0] = true;
+                }
+                else
+                {
+                    filler.Enqueue(t);
+                }
+            }
+            else {
+                if (t.X > 0 && currentChunk.tiles[Index(t.X - 1, t.Y)] != null && currentChunk.tiles[Index(t.X - 1, t.Y)].connected) //Left Neighbor
+                {
+                    t.connections[3] = currentChunk.tiles[Index(t.X - 1, t.Y)].connections[1] = true;
+                }
+                else
+                {
+                    filler.Enqueue(t);
+                }
+            }
         }
     }
 
@@ -219,7 +297,7 @@ public class GameController : MonoBehaviour
 
     void AddChunk()
     {
-        Chunk temp = new Chunk(u, v, Random.Range(3, 12), Random.Range(3, 12));
+        Chunk temp = new Chunk(u, v, maxchunkX, maxchunkY);
         currentChunk = temp;
         Chunks.Add(temp);
     }
@@ -231,10 +309,37 @@ public class GameController : MonoBehaviour
             {
                 if (t != null)
                 {
-                    GameObject tile = Instantiate(tilePrefab, new Vector3(t.X + c.U, t.Y + c.V, 0), Quaternion.identity, this.transform);
+                    GameObject tile = Instantiate(tilePrefab, new Vector3(t.X * 4, t.Y * 4, 0), Quaternion.identity, this.transform);
+                    tile.transform.localScale = 2 * tile.transform.localScale;
                     tile.name = $"Tile({t.X}, {t.Y})";
                     if (t.type == TileType.Entrance) tile.GetComponent<SpriteRenderer>().color = Entrance;
                     if (t.type == TileType.Exit) tile.GetComponent<SpriteRenderer>().color = Exit;
+                    Vector2 fix = new Vector2Int();
+                    float f = 1.5f;
+                    float g = 0.5f;
+
+                    if (t.connections[0]) {
+                        fix = new Vector2(0, f + g);
+                        GameObject connection = Instantiate(tilePrefab, new Vector3((t.X * 4)+fix.x, (t.Y * 4)+fix.y, 0), Quaternion.identity, this.transform);
+                        connection.GetComponent<SpriteRenderer>().color = Left;
+                    }
+                    if (t.connections[1]) {
+                        fix = new Vector2(f, g);
+                        GameObject connection = Instantiate(tilePrefab, new Vector3((t.X * 4) + fix.x, (t.Y * 4) + fix.y, 0), Quaternion.identity, this.transform);
+                        connection.GetComponent<SpriteRenderer>().color = Left;
+                    }
+                    if (t.connections[2])
+                    {
+                        fix = new Vector2(0, -f + g);
+                        GameObject connection = Instantiate(tilePrefab, new Vector3((t.X * 4) + fix.x, (t.Y * 4) + fix.y, 0), Quaternion.identity, this.transform);
+                        connection.GetComponent<SpriteRenderer>().color = Left;
+                    }
+                    if (t.connections[3])
+                    {
+                        fix = new Vector2(-f, g);
+                        GameObject connection = Instantiate(tilePrefab, new Vector3((t.X * 4) + fix.x, (t.Y * 4) + fix.y, 0), Quaternion.identity, this.transform);
+                        connection.GetComponent<SpriteRenderer>().color = Left;
+                    }
                 }
             }
         }

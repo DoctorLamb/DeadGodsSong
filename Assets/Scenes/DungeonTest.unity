@@ -246,9 +246,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tilePrefab: {fileID: 5746338400284299384, guid: 74c844ff7606c234fb9ae8c1e7cb6aa6,
     type: 3}
-  Map: []
-  maxY: 3
-  maxX: 3
+  Chunks: []
+  currentChunk:
+    U: 0
+    V: 0
+    X: 0
+    Y: 0
+    tiles: []
+  maxchunkX: 6
+  maxchunkY: 6
   seed: 54
 --- !u!4 &713941974
 Transform:

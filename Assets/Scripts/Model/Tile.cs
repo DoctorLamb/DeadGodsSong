@@ -9,6 +9,12 @@ public class Tile
     public int X;
     public int Y;
     public bool[] connections;
+
+    public bool connected {
+        get {
+            return connections[0] || connections[1] || connections[2] || connections[3];
+        }
+    }
     public Vector2Int Position {
         get {
             return new Vector2Int(X, Y);
